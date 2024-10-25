@@ -1,6 +1,6 @@
 ﻿
 open LaZula
-open LaZula.ServerModule.CommandableSocketServer
+open LaZula.ServerModule
 open System.Threading.Tasks
 
 [<EntryPoint>]
@@ -12,5 +12,3 @@ let main argv =
     )
     serverTask.Wait()
     0 // return an integer exit code
-
-
