@@ -1,6 +1,6 @@
 ﻿namespace LaZula.ServerModule
 open System
-open System.Net
+open System.Threading
 open System.Net.Sockets
 open System.IO
 open System.Threading.Tasks
@@ -17,7 +17,7 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController) =
     let mutable isRunning = false
     let mutable loopTask:Task = null
     let clientData = {IpAddress = client.Client.RemoteEndPoint.ToString();client=client}
-    let mutable cancelTokenController = new System.Threading.CancellationTokenSource()
+    let mutable cancelTokenController = new CancellationTokenSource()
 
     do
         begin
