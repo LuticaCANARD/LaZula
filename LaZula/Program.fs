@@ -1,2 +1,16 @@
-﻿// For more information see https://aka.ms/fsharp-console-apps
-printfn "Hello from F#"
+﻿
+open LaZula
+open LaZula.ServerModule.CommandableSocketServer
+open System.Threading.Tasks
+
+[<EntryPoint>]
+let main argv =
+    printfn "Hello World from F#!"
+    let serverTask = Task.Factory.StartNew(fun () -> 
+        let server = new CommandableSocketServer(8080)
+        server.StartServer()
+    )
+    serverTask.Wait()
+    0 // return an integer exit code
+
+
