@@ -9,14 +9,15 @@ open System.Text
 
 
 [<Class>]
-type SocketClientManagementUnit(client:TcpClient,parent:IServerController) =
+type SocketClientManagementUnit(client:TcpClient,parent:IServerController,clientId:uint64) =
     let client = client
     let stream = client.GetStream()
     let reader = new StreamReader(stream)
     let writer = new StreamWriter(stream)
+    let clientId = clientId
     let mutable isRunning = false
     let mutable loopTask:Task = null
-    let clientData = {IpAddress = client.Client.RemoteEndPoint.ToString();client=client}
+    let clientData = {IpAddress = client.Client.RemoteEndPoint.ToString();client=client;id=clientId}
     let mutable cancelTokenController = new CancellationTokenSource()
 
     do
@@ -39,12 +40,10 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController) =
             else
                 msg.ToCharArray() |> Array.map (fun x -> byte x)
 
-
     member this.Send (msg:string) = 
         (this :> IClientController).Send(msg)
     member this.Send (msg:byte[]) = 
         (this :> IClientController).Send(msg)
-
 
     member this.Clean () = 
         isRunning <- false
@@ -52,7 +51,7 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController) =
         stream.Close()
         reader.Close()
         writer.Close()
-        printfn "Client Disconnected: %s" clientData.IpAddress
+        printfn "[ %d ] Client Disconnected: %s" clientData.id clientData.IpAddress
         if loopTask <> null then
             cancelTokenController.Cancel()
             parent.StopClient(clientData)
@@ -64,7 +63,7 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController) =
             if line = null then
                 this.Clean()
             else
-                printfn "Received: %s FROM : %s" (Encoding.UTF8.GetString(line)) clientData.IpAddress
+                printfn "[ %d ] %s :: Received: %s " clientData.id clientData.IpAddress (Encoding.UTF8.GetString(line))
                 HandleClient()
         loopTask <- (Task.Factory.StartNew(fun () -> HandleClient(),cancelTokenController.Token)) 
 

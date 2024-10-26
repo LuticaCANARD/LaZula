@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <Content Include="README.md" />
+    <Compile Include="src\CommandInputModule\CommandInputModule.fs" />
+    <Compile Include="src\SystemController\SystemCancelController.fs" />
     <Compile Include="src\ServerModule\IServerController.fs" />
     <Compile Include="src\ServerModule\SocketClientManagementUnit.fs" />
     <Compile Include="src\ServerModule\CommandableSocketServer.fs" />

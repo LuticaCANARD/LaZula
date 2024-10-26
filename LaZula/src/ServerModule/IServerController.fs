@@ -9,6 +9,7 @@ open System.Net.Sockets
 type ContactData = {
     IpAddress:string
     client:TcpClient
+    id:uint64
 }
 
 [<Interface>]
