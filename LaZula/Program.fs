@@ -28,12 +28,13 @@ let main argv =
                         end 
                      | _ -> begin
                             printfn "Invalid Command";
-                            inputLoop()
                         end
-                let arg = cmds[..headerSet];
-                match arg with
-                | "exit" -> serverTaskAction.token.Cancel()
-                | _ -> begin
+                else
+                    let arg = cmds[..headerSet];
+                    match arg with
+                    | "exit" -> serverTaskAction.token.Cancel()
+                    | _ -> 
+                    begin
                         if(arg.Length < 2) then
                             printfn "Invalid Command"
                             inputLoop()
@@ -47,7 +48,7 @@ let main argv =
                                 printfn "[ %d ] send to : %s" id msg
                         with :? FormatException as e -> printfn "Invalid Command error"
                     end
-                end
+            end
             inputLoop()
         inputLoop()
     ))
