@@ -16,8 +16,16 @@ let main argv =
     let uiTaskAction = new TaskActions(fun () -> (
         let rec inputLoop () = 
             begin
-                let nams = Console.ReadLine()
-                printfn "get Command! :  %s" nams
+                let cmds = Console.ReadLine()
+                printfn "get Command! :  %s" cmds
+                let arg = cmds.Split(' ')
+                match arg.[0] with
+                | "exit" -> serverTaskAction.token.Cancel()
+                | _ -> begin
+                    let id = UInt64.Parse(arg.[0])
+                    let msg = arg.[1]
+                    printfn "[ %d ] send to : %s" id msg
+                end
             end
             inputLoop()
         inputLoop()
