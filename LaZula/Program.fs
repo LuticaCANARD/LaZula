@@ -17,16 +17,37 @@ let main argv =
         let rec inputLoop () = 
             begin
                 let cmds = Console.ReadLine()
-                printfn "get Command! :  %s" cmds
-                let arg = cmds.Split(' ')
-                match arg.[0] with
+                printfn "get Command! : %s" cmds
+                let headerSet = cmds.IndexOf(' ')
+                if headerSet = -1 then
+                     match cmds with
+                     | "exit" -> begin
+                            printfn "exit"
+                            serverTaskAction.token.Cancel()
+                            exit(0)
+                        end 
+                     | _ -> begin
+                            printfn "Invalid Command";
+                            inputLoop()
+                        end
+                let arg = cmds[..headerSet];
+                match arg with
                 | "exit" -> serverTaskAction.token.Cancel()
                 | _ -> begin
-                    let id = UInt64.Parse(arg.[0])
-                    let msg = arg.[1]
-                    printfn "[ %d ] send to : %s" id msg
+                        if(arg.Length < 2) then
+                            printfn "Invalid Command"
+                            inputLoop()
+                        try
+                            let arg2 = cmds[headerSet..];
+                            if(arg = "all") then 
+                                printfn "send to all : %s" arg2
+                            else
+                                let id = UInt64.Parse(arg)
+                                let msg = arg2
+                                printfn "[ %d ] send to : %s" id msg
+                        with :? FormatException as e -> printfn "Invalid Command error"
+                    end
                 end
-            end
             inputLoop()
         inputLoop()
     ))

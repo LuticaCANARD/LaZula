@@ -51,7 +51,7 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController,client
         stream.Close()
         reader.Close()
         writer.Close()
-        printfn "[ %d ] Client Disconnected: %s" clientData.id clientData.IpAddress
+        parent.Logger.DisconnectLog(clientData.id,clientData.IpAddress)
         if loopTask <> null then
             cancelTokenController.Cancel()
             parent.StopClient(clientData)
@@ -63,7 +63,7 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController,client
             if line = null then
                 this.Clean()
             else
-                printfn "[ %d ] %s :: Received: %s " clientData.id clientData.IpAddress (Encoding.UTF8.GetString(line))
+                parent.Logger.MessageLog(clientData.id,clientData.IpAddress,(Encoding.UTF8.GetString(line)))
                 HandleClient()
         loopTask <- (Task.Factory.StartNew(fun () -> HandleClient(),cancelTokenController.Token)) 
 

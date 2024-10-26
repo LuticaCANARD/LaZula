@@ -24,4 +24,5 @@ type IClientController =
 type IServerController = 
     abstract member StartConnection : IClientController -> unit
     abstract member StopClient : ContactData -> unit
+    abstract member Logger: LoggerModule.ILoggingTool
 
