@@ -22,7 +22,7 @@ type IClientController =
 
 [<Interface>]
 type IServerController = 
-    abstract member StartConnection : IClientController -> unit
+    abstract member AppendConnection : IClientController -> unit
     abstract member StopClient : ContactData -> unit
     abstract member Logger: LoggerModule.ILoggingTool
 

@@ -23,16 +23,13 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController,client
     do
         begin
             writer.AutoFlush <- true
-            
         end
     interface IDisposable with
         member this.Dispose() = this.Clean()
     interface IClientController with
         member this.clientData = clientData
-        member this.Send (msg:string) = 
-            writer.WriteLine(msg)
-        member this.Send (msg:byte[]) = 
-            stream.Write(msg, 0, msg.Length)
+        member this.Send (msg:string) = writer.WriteLine(msg)
+        member this.Send (msg:byte[]) = stream.Write(msg, 0, msg.Length)
         member this.Receive () = 
             let msg = reader.ReadLine()
             if msg = null then
@@ -65,10 +62,11 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController,client
             else
                 parent.Logger.MessageLog(clientData.id,clientData.IpAddress,(Encoding.UTF8.GetString(line)))
                 HandleClient()
-        loopTask <- (Task.Factory.StartNew(fun () -> HandleClient(),cancelTokenController.Token)) 
+        loopTask <- (Task.Factory.StartNew(HandleClient,cancelTokenController.Token)) 
 
     member this.Start() =
         isRunning <- true
         this.ServerLoop()
+        parent.AppendConnection(this :> IClientController)
         this
 

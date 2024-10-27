@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Content Include="README.md" />
+    <Compile Include="src\ClientUnit\TCPClientUnit.fs" />
     <Compile Include="src\LoggerModule\LoggerModule.fs" />
     <Compile Include="src\CommandInputModule\CommandInputModule.fs" />
     <Compile Include="src\SystemController\SystemCancelController.fs" />

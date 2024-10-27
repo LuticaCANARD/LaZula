@@ -8,19 +8,23 @@ open System.Threading.Tasks
 
 [<Class>]
 type CommandableSocketServer(port:int) =
-    static let mutable maxClientIndex : uint64 = 0UL; 
+    let mutable maxClientIndex : uint64 = 0UL; 
     let server:TcpListener = new TcpListener(IPAddress.Any, port)
     let port:int = port
-    let conntctedClients : Map<uint64,IClientController> = Map[]
+    let mutable conntctedClients : Map<uint64,IClientController> = Map[]
+    member public this.GetClientLastId = maxClientIndex
     interface IServerController with
-        member this.StartConnection(client) = 
-            conntctedClients.Add(client.clientData.id,client) |> ignore
+        member this.AppendConnection(client) = 
+            conntctedClients <- conntctedClients.Add(maxClientIndex,client)
+            (this :> IServerController).Logger.LogEtc "[%d] Applied ... %s" maxClientIndex (client.clientData.IpAddress)
+            maxClientIndex <- maxClientIndex + 1UL
         member this.StopClient(client:ContactData) = 
             conntctedClients.Remove(client.id) |> ignore
         member this.Logger = new LoggerModule.ConsoleLogger()
 
     member inline this.Log = 
         (this:>IServerController).Logger.LogEtc
+    member public this.GetClientById(id:uint64) = conntctedClients.TryFind(id)
     member this.StartServer () = 
         if port < 0 || port > 65535 then
             failwith "Invalid port"
@@ -34,10 +38,9 @@ type CommandableSocketServer(port:int) =
                 let client = server.AcceptTcpClient()
                 (this:>IServerController).Logger.AcceptLog(maxClientIndex,(client.Client.RemoteEndPoint.ToString())) |> ignore
                 let clientUnit = new SocketClientManagementUnit(client,this,maxClientIndex)
-                conntctedClients.Add(maxClientIndex,clientUnit.Start()) |> ignore
-                maxClientIndex <- maxClientIndex + 1UL
+                clientUnit.Start() |> ignore
                 serverLoop()
-            with 
+            with
             | :? SocketException as e -> // 소켓 에러인 경우
                 (this:>IServerController).Logger.LogEtc "Socket exception %s" e.Message; 
             | ex ->  // 그 외의 에러인 경우, 재시도.
