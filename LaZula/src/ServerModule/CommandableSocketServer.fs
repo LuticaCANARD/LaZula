@@ -21,6 +21,31 @@ type CommandableSocketServer(port:int) =
         member this.StopClient(client:ContactData) = 
             conntctedClients.Remove(client.id) |> ignore
         member this.Logger = new LoggerModule.ConsoleLogger()
+        member this.MakeRelayConnection (id1,id2) = 
+            let client1 = conntctedClients.TryFind(id1)
+            let client2 = conntctedClients.TryFind(id2)
+            if client1.IsSome && client2.IsSome then
+                let client1 = client1.Value
+                client1.MakeRelay(id2)
+            else
+                (this:>IServerController).Logger.LogEtc "Invalid Connection Request"
+        member this.SendRelay (id,msg,from) = 
+            let client = conntctedClients.TryFind(id)
+            if client.IsSome then
+                let client = client.Value
+                try
+                    client.Send(msg)
+                    (this:>IServerController).Logger.LogEtc "[%d] Relay to %d : %A" from id msg
+                    true
+                with 
+                | :? System.Net.Sockets.SocketException as e -> 
+                    (this:>IServerController).Logger.LogEtc "[%d]Socket Error : end relay - %d" from id
+                    false
+                | :? System.ObjectDisposedException as e -> 
+                    (this:>IServerController).Logger.LogEtc "[%d]Object Disposed : end relay - %d" from id
+                    false
+            else
+                false
 
     member inline this.Log = 
         (this:>IServerController).Logger.LogEtc
