@@ -20,10 +20,6 @@ type SocketClientManagementUnit(client:TcpClient,parent:IServerController,client
     let clientData = {IpAddress = client.Client.RemoteEndPoint.ToString();client=client;id=clientId}
     let mutable cancelTokenController = new CancellationTokenSource()
     let mutable relayedSet:Set<uint64> = new Set<uint64>([])
-    do
-        begin
-            writer.AutoFlush <- true
-        end
     interface IDisposable with
         member this.Dispose() = this.Clean()
     interface IClientController with

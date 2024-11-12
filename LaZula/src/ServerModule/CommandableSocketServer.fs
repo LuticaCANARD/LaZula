@@ -6,8 +6,11 @@ open System.IO
 open System.Threading.Tasks
 
 
+
 [<Class>]
 type CommandableSocketServer(port:int) =
+    let endbuffer = System.Text.Encoding.ASCII.GetBytes("\n")
+    let mutable _defaultRelayId = 0UL
     let mutable maxClientIndex : uint64 = 0UL; 
     let server:TcpListener = new TcpListener(IPAddress.Any, port)
     let port:int = port
@@ -34,8 +37,10 @@ type CommandableSocketServer(port:int) =
             if client.IsSome then
                 let client = client.Value
                 try
-                    client.Send(msg)
-                    (this:>IServerController).Logger.LogEtc "[%d] Relay to %d : %A" from id msg
+                    let sed = Array.append msg endbuffer
+                    client.Send(sed)
+                    (this:>IServerController).Logger.LogEtc "[%d] Relay to %d : %A" from id sed
+
                     true
                 with 
                 | :? System.Net.Sockets.SocketException as e -> 
@@ -46,7 +51,8 @@ type CommandableSocketServer(port:int) =
                     false
             else
                 false
-
+    member public this.defaultRelayId with get() = _defaultRelayId and set(value) = _defaultRelayId <- value
+    member this.defaultRelay = conntctedClients.TryFind(this.defaultRelayId)
     member inline this.Log = 
         (this:>IServerController).Logger.LogEtc
     member public this.GetClientById(id:uint64) = conntctedClients.TryFind(id)
@@ -61,8 +67,13 @@ type CommandableSocketServer(port:int) =
         let rec serverLoop () = 
             try
                 let client = server.AcceptTcpClient()
-                (this:>IServerController).Logger.AcceptLog(maxClientIndex,(client.Client.RemoteEndPoint.ToString())) |> ignore
-                let clientUnit = new SocketClientManagementUnit(client,this,maxClientIndex)
+                let nowId = maxClientIndex
+                (this:>IServerController).Logger.AcceptLog(nowId,(client.Client.RemoteEndPoint.ToString())) |> ignore
+                let clientUnit = new SocketClientManagementUnit(client,this,nowId)
+                if not(this.defaultRelayId = 0UL) then
+                    (clientUnit:>IClientController).MakeRelay(this.defaultRelayId)
+                    (this.defaultRelay.Value).MakeRelay(nowId)
+
                 clientUnit.Start() |> ignore
                 serverLoop()
             with

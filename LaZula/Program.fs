@@ -14,7 +14,9 @@ let main argv =
         fun () -> 
             server.StartServer()
     )
+    
     let uiTaskAction = new TaskActions(fun () -> (
+
         let rec inputLoop () = 
             begin
                 let cmds = Console.ReadLine()
@@ -49,8 +51,12 @@ let main argv =
                                         try
                                             let argss = arg2.Split(' ')
                                             let ipWithPort = argss.[0]
-                                            let ip = Net.IPAddress.Parse(ipWithPort.Split(':')[0])
-                                            let port = Int32.Parse(ipWithPort.Split(':')[1])
+                                            let iporigin = ipWithPort.Split(':')
+                                            if iporigin.Length < 2 then
+                                                printfn "Invalid Command error"
+                                            else
+                                            let ip = Net.IPAddress.Parse(iporigin.[0])
+                                            let port = Int32.Parse(iporigin.[1])
                                             printfn "connect to : %s" (id.ToString())
                                             let client = new TcpClient()
                                             try 
@@ -59,6 +65,7 @@ let main argv =
                                             with
                                             | :? SocketException as e -> printfn "Socket Error"
                                             | :? ArgumentNullException as e -> printfn "Invalid Command error"
+                                            | :? ArgumentOutOfRangeException as e -> printfn "Invalid IP error"
                                         with :? FormatException as e -> printfn "Invalid Command error"
                                     end
                                 elif (arg = "r") then 
@@ -68,6 +75,25 @@ let main argv =
                                             let fromId = UInt64.Parse(targets.[0])
                                             let toId = UInt64.Parse(targets.[1])
                                             (server:>IServerController).MakeRelayConnection(fromId,toId)
+                                        with 
+                                        | :? FormatException as e -> printfn "Invalid Command error1"
+                                        | :? ArgumentNullException as e -> printfn "Invalid Command error2"
+                                        | :? ArgumentOutOfRangeException as e -> printfn "Invalid Command error3"
+                                        | :? OverflowException as e -> printfn "Invalid Command error4"
+                                        | :? SocketException as e -> printfn "Invalid Command error5"
+                                        | :? ObjectDisposedException as e -> printfn "Invalid Command error6"
+                                        | :? InvalidOperationException as e -> printfn "Invalid Command error7"
+                                        | :? IO.IOException as e -> printfn "Invalid Command error8"
+                                        | :? ArgumentException as e -> printfn "Invalid Command error9"
+                                        | :? IndexOutOfRangeException as e -> printfn "Incorrect IP! you need input like 0.0.0.0:port"
+                                    end
+                                elif (arg = "defaultset") then 
+                                    begin
+                                        try 
+                                            let targets = arg2.Split(' ')
+                                            let fromId = UInt64.Parse(targets.[0])
+                                            server.defaultRelayId <- fromId
+                                            
                                         with 
                                         | :? FormatException as e -> printfn "Invalid Command error1"
                                         | :? ArgumentNullException as e -> printfn "Invalid Command error2"

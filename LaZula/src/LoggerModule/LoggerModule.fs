@@ -17,7 +17,12 @@ type ILoggingTool =
 
 [<Class>]
 type ConsoleLogger() = 
-    let actor = printfn 
+    let actor = fun(args:Printf.TextWriterFormat<'T>) -> begin
+        if Console.CursorLeft <> 0 then
+            Console.WriteLine()
+        printf args;
+    end
+    
     interface ILoggingTool with
         member this.Log (msg:string) = 
             actor "%s" msg
